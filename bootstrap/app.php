@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // 401 - No autenticado (evita redirección a ruta 'login')
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json(['message' => 'No autorizado. Por favor, inicie sesión o proporcione un token válido'], 401);
         });
 
         // 403 - No autorizado
