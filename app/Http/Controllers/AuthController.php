@@ -100,4 +100,5 @@ class AuthController extends Controller
             'message' => 'Sesión cerrada correctamente. Todos los tokens fueron eliminados.',
         ], 200);
     }
+
 }
