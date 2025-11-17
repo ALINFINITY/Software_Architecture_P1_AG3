@@ -64,12 +64,26 @@ class UsuarioController extends Controller
         ], 201);
     }
 
+    /**
+     * Elimina un usuario existente.
+     * Solo ADMIN puede eliminar usuarios.
+     */
+    public function destroy(Request $request, $id)
+    {
+        $usuarioAuth = $request->user();
 
+        if ($usuarioAuth->rol !== 'ADMIN') {
+            return response()->json(['message' => 'No tienes permisos para eliminar usuarios.'], 403);
+        }
 
+        $usuario = Usuario::find($id);
 
+        if (!$usuario) {
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
+        }
 
+        $usuario->delete();
 
-
-
-
+        return response()->json(['message' => 'Usuario eliminado correctamente.'], 200);
+    }
 }
