@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * Clase Usuario
@@ -14,10 +15,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  */
 class Usuario extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * Define la tabla asociada a este modelo.
+     * Tabla asociada al modelo.
      */
     protected $table = 'usuarios';
 
@@ -48,7 +49,7 @@ class Usuario extends Authenticatable
     ];
 
     /**
-     * Atributos que no deben mostrarse cuando el modelo se convierta a JSON.
+     * Atributos ocultos al convertir el modelo a JSON.
      */
     protected $hidden = [
         'password',
@@ -56,10 +57,11 @@ class Usuario extends Authenticatable
     ];
 
     /**
-     * Define la conversión automática de ciertos campos a tipos de datos específicos.
+     * Conversión de tipos para atributos específicos.
      */
     protected $casts = [
         'fecha_nacimiento' => 'date',
-        'fecha_creacion' => 'datetime',
+        'fecha_creacion'   => 'datetime',
     ];
+
 }

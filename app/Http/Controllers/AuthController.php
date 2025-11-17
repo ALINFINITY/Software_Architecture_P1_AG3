@@ -81,18 +81,18 @@ class AuthController extends Controller
         ]);
     }
 
+
     /**
-     * Cierra la sesión eliminando el token de acceso actual.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * LOGOUT GLOBAL
+     * Elimina todos los tokens activos del usuario autenticado.
      */
     public function logout(Request $request)
     {
-        // Elimina solo el token actual, no afecta otros dispositivos/sesiones
-        $request->user()->currentAccessToken()->delete();
+        // Revoca todos los tokens asociados al usuario actual
+        $request->user()->tokens()->delete();
 
         return response()->json([
-            'message' => 'Sesión cerrada correctamente.',
-        ]);
+            'message' => 'Sesión cerrada correctamente. Todos los tokens fueron eliminados.',
+        ], 200);
     }
 }
