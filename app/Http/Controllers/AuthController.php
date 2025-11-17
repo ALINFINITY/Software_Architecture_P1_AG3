@@ -8,10 +8,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 
-
-
-
-/**Aqui comienza persona 2
      /**
      * LOGIN DE USUARIO
      * Genera un token de acceso si las credenciales son válidas.
@@ -40,7 +36,22 @@ use Illuminate\Validation\ValidationException;
         return response()->json([
             'message' => 'Inicio de sesión exitoso.',
             'usuario' => $usuario,
-            'token'   => $token,
+            'token' => $token,
+        ],200);
+    }
+
+
+    /**
+     * LOGOUT GLOBAL
+     * Elimina todos los tokens activos del usuario autenticado.
+     */
+    public function logout(Request $request)
+    {
+        // Revoca todos los tokens asociados al usuario actual
+        $request->user()->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Sesión cerrada correctamente. Todos los tokens fueron eliminados.',
         ], 200);
     }
-    /**Aqui termina persona 2
+    
