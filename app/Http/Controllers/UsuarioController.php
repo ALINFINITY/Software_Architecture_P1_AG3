@@ -52,35 +52,48 @@ class UsuarioController extends Controller
 
     /**
      * Muestra un usuario específico por su ID.
+     * Los ADMIN pueden ver cualquier usuario; los USER solo el suyo
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
+        $usuarioAuth = $request->user();
         $usuario = Usuario::find($id);
+
         if (!$usuario) {
-            return response()->json(['message' => 'Usuario no encontrado'], 404);
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
         }
+
+        if ($usuarioAuth->rol !== 'ADMIN' && $usuarioAuth->id !== $usuario->id) {
+            return response()->json(['message' => 'No tienes permiso para ver este usuario.'], 403);
+        }
+
         return response()->json($usuario, 200);
     }
 
-
     /**
      * Actualiza los datos de un usuario existente.
-     * Solo se actualizan los campos enviados en la petición.
+     * ADMIN puede modificar cualquier usuario.
+     * USER solo puede actualizar su propio perfil.
      */
     public function update(Request $request, $id)
     {
+        $usuarioAuth = $request->user();
         $usuario = Usuario::find($id);
+
         if (!$usuario) {
-            return response()->json(['message' => 'Usuario no encontrado'], 404);
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
         }
 
-        // Validación condicional: solo valida los campos enviados
+        // Verificación de permisos
+        if ($usuarioAuth->rol !== 'ADMIN' && $usuarioAuth->id !== $usuario->id) {
+            return response()->json(['message' => 'No tienes permiso para actualizar este usuario.'], 403);
+        }
+
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:100',
             'correo' => [
                 'sometimes',
                 'email',
-                // Permite que el usuario conserve su propio correo
                 Rule::unique('usuarios', 'correo')->ignore($id),
             ],
             'password' => 'sometimes|string|min:6',
@@ -92,13 +105,16 @@ class UsuarioController extends Controller
             'rol' => 'nullable|in:ADMIN,USER',
         ]);
 
-        // Si se envía una nueva contraseña, se encripta
         if (isset($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         }
 
         $usuario->update($validated);
-        return response()->json($usuario, 200);
+
+        return response()->json([
+            'message' => 'Usuario actualizado correctamente.',
+            'usuario' => $usuario,
+        ], 200);
     }
 
     /**
