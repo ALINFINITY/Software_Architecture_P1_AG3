@@ -7,78 +7,37 @@ use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Controlador de autenticación para usuarios.
- * Gestiona el registro, inicio y cierre de sesión usando tokens personales (Sanctum).
- */
-class AuthController extends Controller
-{
-        /**
-     * Registra un nuevo usuario, valida los datos y genera un token de acceso.
-     * La contraseña se encripta antes de guardar.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function register(Request $request)
-    {
-        // Validación de los datos de entrada
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
-            'correo' => 'required|string|email|unique:usuarios,correo',
-            'password' => 'required|string|min:6',
-            'rol' => 'in:ADMIN,USER',
-        ]);
 
-        // Crear el usuario y encriptar la contraseña
-        $usuario = Usuario::create([
-            'nombre' => $validated['nombre'],
-            'correo' => $validated['correo'],
-            'password' => Hash::make($validated['password']),
-            'rol' => $validated['rol'] ?? 'USER',
-        ]);
-
-        // Generar token personal para autenticación API
-        $token = $usuario->createToken('token_auth')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Usuario registrado correctamente.',
-            'usuario' => $usuario,
-            'token' => $token,
-        ], 201);
-    }
-
-    /**
-     * Autentica un usuario y devuelve un token si las credenciales son válidas.
-     
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Validation\ValidationException
+     /**
+     * LOGIN DE USUARIO
+     * Genera un token de acceso si las credenciales son válidas.
      */
     public function login(Request $request)
     {
-        // Validar formato de correo y existencia de contraseña
         $request->validate([
-            'correo' => 'required|email',
+            'correo'   => 'required|email',
             'password' => 'required|string',
+        ], [
+            'correo.required'   => 'Debe ingresar un correo.',
+            'correo.email'      => 'Formato de correo inválido.',
+            'password.required' => 'Debe ingresar una contraseña.',
         ]);
 
         $usuario = Usuario::where('correo', $request->correo)->first();
 
-        // Verificar credenciales
         if (!$usuario || !Hash::check($request->password, $usuario->password)) {
-            throw ValidationException::withMessages([
-                'correo' => ['Las credenciales no son válidas.'],
-            ]);
+            return response()->json([
+                'message' => 'Las credenciales no son válidas.',
+            ], 401);
         }
 
-        // Generar token personal para autenticación API
         $token = $usuario->createToken('token_auth')->plainTextToken;
 
         return response()->json([
             'message' => 'Inicio de sesión exitoso.',
             'usuario' => $usuario,
             'token' => $token,
-        ]);
+        ],200);
     }
 
 
@@ -95,4 +54,4 @@ class AuthController extends Controller
             'message' => 'Sesión cerrada correctamente. Todos los tokens fueron eliminados.',
         ], 200);
     }
-}
+    

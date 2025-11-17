@@ -34,8 +34,8 @@ El sistema devuelve **todas las respuestas en formato JSON**, incluye **validaci
 ### 1. Clonar el repositorio
 
 `
-    git clone https://github.com/ALINFINITY/Software_Architecture_P1_AG2.git  
-    cd Software_Architecture_P1_AG2
+    git clone https://github.com/ALINFINITY/Software_Architecture_P1_AG3.git 
+    cd Software_Architecture_P1_AG3
 `
 ### 2. Instalar dependencias
 `
@@ -68,6 +68,10 @@ El sistema devuelve **todas las respuestas en formato JSON**, incluye **validaci
 ### 6. Desplegar el servicio
 `
     php artisan serve
+`
+### 7. Objetivo
+`
+    Implementar un microservicio independiente y escalable que centralice la autenticación y gestión de usuarios utilizando Laravel Sanctum, proporcionando un mecanismo seguro basado en tokens personales cuyo objetivo es permitir que los demás microservicios del ecosistema verifiquen las solicitudes entrantes mediante la validación del token y el perfil de usuario (administrador, editor o usuario estándar), garantizando un acceso controlado, seguro y coherente en toda la arquitectura distribuida.
 `
 
 # License
