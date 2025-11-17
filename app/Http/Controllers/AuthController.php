@@ -6,45 +6,54 @@ use Illuminate\Http\Request;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
-/**
- * Controlador de autenticación para usuarios.
- * Gestiona el registro, inicio y cierre de sesión usando tokens personales (Sanctum).
- */
+
 class AuthController extends Controller
 {
-        /**
+    /**
      * Registra un nuevo usuario, valida los datos y genera un token de acceso.
      * La contraseña se encripta antes de guardar.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request)
     {
-        // Validación de los datos de entrada
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
-            'correo' => 'required|string|email|unique:usuarios,correo',
-            'password' => 'required|string|min:6',
-            'rol' => 'in:ADMIN,USER',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nombre'   => 'required|string|max:100',
+                'correo'   => 'required|string|email|unique:usuarios,correo',
+                'password' => 'required|string|min:6',
+                'rol'      => 'in:ADMIN,USER',
+            ], [ //Mensajes de error
+                'nombre.required'   => 'El nombre es obligatorio.',
+                'correo.required'   => 'El correo es obligatorio.',
+                'correo.email'      => 'El formato del correo no es válido.',
+                'correo.unique'     => 'El correo ya está registrado.',
+                'password.required' => 'La contraseña es obligatoria.',
+                'password.min'      => 'La contraseña debe tener al menos 6 caracteres.',
+                'rol.in'            => 'El rol debe ser ADMIN o USER.',
+            ]);
 
-        // Crear el usuario y encriptar la contraseña
-        $usuario = Usuario::create([
-            'nombre' => $validated['nombre'],
-            'correo' => $validated['correo'],
-            'password' => Hash::make($validated['password']),
-            'rol' => $validated['rol'] ?? 'USER',
-        ]);
+            $usuario = Usuario::create([
+                'nombre'   => $validated['nombre'],
+                'correo'   => $validated['correo'],
+                'password' => Hash::make($validated['password']),
+                'rol'      => $validated['rol'] ?? 'USER',
+            ]);
 
-        // Generar token personal para autenticación API
-        $token = $usuario->createToken('token_auth')->plainTextToken;
+            $token = $usuario->createToken('token_auth')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Usuario registrado correctamente.',
-            'usuario' => $usuario,
-            'token' => $token,
-        ], 201);
+            return response()->json([
+                'message' => 'Usuario registrado correctamente. Ahora puede iniciar sesión.',
+                'usuario' => $usuario,
+                'token'   => $token,
+            ], 201);
+
+        } catch (ValidationException $e) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Error en el registro.',
+                'errors'  => $e->errors(),
+            ], 422));
+        }
     }
 
     /**
