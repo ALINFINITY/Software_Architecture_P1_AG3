@@ -8,12 +8,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-
 class AuthController extends Controller
 {
     /**
-     * Registra un nuevo usuario, valida los datos y genera un token de acceso.
-     * La contraseña se encripta antes de guardar.
+     * REGISTRO DE USUARIO
+     * Crea el usuario y genera un token automaticamente.
      */
     public function register(Request $request)
     {
@@ -57,51 +56,49 @@ class AuthController extends Controller
     }
 
     /**
-     * Autentica un usuario y devuelve un token si las credenciales son válidas.
-     
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Validation\ValidationException
+     * LOGIN DE USUARIO
+     * Genera un token de acceso si las credenciales son válidas.
      */
     public function login(Request $request)
     {
-        // Validar formato de correo y existencia de contraseña
         $request->validate([
-            'correo' => 'required|email',
+            'correo'   => 'required|email',
             'password' => 'required|string',
+        ], [
+            'correo.required'   => 'Debe ingresar un correo.',
+            'correo.email'      => 'Formato de correo inválido.',
+            'password.required' => 'Debe ingresar una contraseña.',
         ]);
 
         $usuario = Usuario::where('correo', $request->correo)->first();
 
-        // Verificar credenciales
         if (!$usuario || !Hash::check($request->password, $usuario->password)) {
-            throw ValidationException::withMessages([
-                'correo' => ['Las credenciales no son válidas.'],
-            ]);
+            return response()->json([
+                'message' => 'Las credenciales no son válidas.',
+            ], 401);
         }
 
-        // Generar token personal para autenticación API
         $token = $usuario->createToken('token_auth')->plainTextToken;
 
         return response()->json([
             'message' => 'Inicio de sesión exitoso.',
             'usuario' => $usuario,
-            'token' => $token,
-        ]);
+            'token'   => $token,
+        ], 200);
     }
 
     /**
-     * Cierra la sesión eliminando el token de acceso actual.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * LOGOUT GLOBAL
+     * Elimina todos los tokens activos del usuario autenticado.
      */
     public function logout(Request $request)
     {
-        // Elimina solo el token actual, no afecta otros dispositivos/sesiones
-        $request->user()->currentAccessToken()->delete();
+        // Revoca todos los tokens asociados al usuario actual
+        $request->user()->tokens()->delete();
 
         return response()->json([
-            'message' => 'Sesión cerrada correctamente.',
-        ]);
+            'message' => 'Sesión cerrada correctamente. Todos los tokens fueron eliminados.',
+        ], 200);
     }
+
 }
