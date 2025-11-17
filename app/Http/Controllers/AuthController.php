@@ -22,7 +22,7 @@ class AuthController extends Controller
                 'correo'   => 'required|string|email|unique:usuarios,correo',
                 'password' => 'required|string|min:6',
                 'rol'      => 'in:ADMIN,USER',
-            ], [
+            ], [ //Mensajes de error
                 'nombre.required'   => 'El nombre es obligatorio.',
                 'correo.required'   => 'El correo es obligatorio.',
                 'correo.email'      => 'El formato del correo no es válido.',
